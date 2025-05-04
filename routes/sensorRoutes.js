@@ -3,7 +3,7 @@ const router = express.Router();
 const sensorData = require("../models/sensorData");
 
 // POST route to receive data
-router.post("/upload", async (req, res) => {
+router.post("/api/sensor", async (req, res) => {
   console.log("🔹 Incoming request:", req.body);
   try {
     const data = new sensorData(req.body); // Save request data
