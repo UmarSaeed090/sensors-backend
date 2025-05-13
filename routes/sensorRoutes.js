@@ -134,11 +134,21 @@ module.exports = (io) => {
 
   // GET route to fetch the latest sensor data
   router.get("/latest", async (req, res) => {
-    console.log("🔹 Fetching latest sensor data");
+    const { tagNumber } = req.query;
+    console.log("🔹 Fetching latest sensor data", tagNumber ? `for tagNumber: ${tagNumber}` : "");
+
     try {
-      const latestData = await sensorData.findOne().sort({ timestamp: -1 });
-      if (!latestData) {
-        return res.status(404).json({ message: "No data found" });
+      let latestData;
+      if (tagNumber) {
+        latestData = await sensorData.findOne({ tagNumber }).sort({ _id: -1 });
+        if (!latestData) {
+          return res.status(404).json({ message: `No data found for tagNumber: ${tagNumber}` });
+        }
+      } else {
+        latestData = await sensorData.findOne().sort({ _id: -1 });
+        if (!latestData) {
+          return res.status(404).json({ message: "No data found" });
+        }
       }
       res.json(latestData);
     } catch (error) {
