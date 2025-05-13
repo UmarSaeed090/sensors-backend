@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const sensorDataSchema = new mongoose.Schema({
-  cowId: { type: String, required: true },
+  tagNumber: { type: String, required: true },
   dht22: { temperature: Number, humidity: Number },
   max30100: { heartRate: Number, spo2: Number },
   ds18b20: { temperature: Number },

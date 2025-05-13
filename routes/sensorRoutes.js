@@ -37,10 +37,10 @@ function checkThresholds(data) {
 module.exports = (io) => {
   // POST route to receive sensor data
   router.post("/live", async (req, res) => {
-    const { cowId } = req.body;
+    const { tagNumber } = req.body;
     
-    if (!cowId) {
-      return res.status(400).json({ message: "cowId is required" });
+    if (!tagNumber) {
+      return res.status(400).json({ message: "tagNumber is required" });
     }
     console.log("🔹 Incoming sensor data:", req.body);
 
@@ -50,14 +50,14 @@ module.exports = (io) => {
       // const latestData = await sensorData.findOne().sort({ timestamp: -1 });
       
       // Broadcast to subscribed clients
-      io.to(cowId).emit("sensor-update", { cowId, data });
+      io.to(tagNumber).emit("sensor-update", { tagNumber, data });
       
       res.status(201).json({ message: "Data emitted" });
       
       
       //send notification to firebase
       const alerts = checkThresholds(req.body);
-      const fcmTokens = await getUserFcmTokenByCowId(cowId);
+      const fcmTokens = await getUserFcmTokenByCowId(tagNumber);
       const now = Date.now();
       const alertsToSend = [];
 
@@ -66,7 +66,7 @@ module.exports = (io) => {
       }
 
       alerts.forEach((alert) => {
-        const key = `${cowId}_${alert}`;
+        const key = `${tagNumber}_${alert}`;
         const lastSent = alertCooldownMap.get(key) || 0;
 
         if (now - lastSent > ALERT_COOLDOWN_MS) {
@@ -78,7 +78,7 @@ module.exports = (io) => {
       if (alertsToSend.length > 0 && fcmTokens.length > 0) {        
         const messages = fcmTokens.map((token) => ({
           notification: {
-            title: `⚠️ Alert for Cow ${cowId}`,
+            title: `⚠️ Alert for Cow ${tagNumber}`,
             body: alertsToSend.join(", "),
           },
           token,
