@@ -5,7 +5,7 @@ const admin = require("../firebase/firebase");
 const { getUserFcmTokenByCowId } = require("../utils/fcmUtils");
 
 const THRESHOLDS = {
-  temperature: { min: 35, max: 39 },
+  temperature: { min: 30, max: 39 },
   heartRate: { min: 60, max: 100 },
   spo2: { min: 95, max: 100 },
 };
@@ -18,7 +18,7 @@ const ALERT_COOLDOWN_MS = 10 * 60 * 1000; // 5 minutes
 function checkThresholds(data) {
   const alerts = [];
 
-  if (data?.dht22?.temperature < THRESHOLDS.temperature.min || data?.dht22?.temperature > THRESHOLDS.temperature.max) {
+  if (data?.ds18b20?.temperature < THRESHOLDS.temperature.min || data?.ds18b20?.temperature > THRESHOLDS.temperature.max) {
     alerts.push("Abnormal Temperature");
   }
 
