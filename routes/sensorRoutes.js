@@ -1,8 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const sensorData = require("../models/sensorData");
-const admin = require("../firebase/firebase");
-const { getUserFcmTokenByCowId } = require("../utils/fcmUtils");
 
 const THRESHOLDS = {
   temperature: { min: 30, max: 39 },
@@ -33,6 +31,34 @@ function checkThresholds(data) {
   return alerts;
 }
 
+async function sendCowNotification(tagNumber, body, data = {}) {
+  try {
+    const response = await fetch(
+      'https://us-central1-fyp-backend-672d5.cloudfunctions.net/sendSensorNotification',
+      {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        tagNumber,
+        body,
+        data,
+      }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error sending notification:', error.response?.data || error.message);
+    throw error;
+  }
+}
+
 
 module.exports = (io) => {
   // POST route to receive sensor data
@@ -57,7 +83,6 @@ module.exports = (io) => {
       
       //send notification to firebase
       const alerts = checkThresholds(req.body);
-      const fcmTokens = await getUserFcmTokenByCowId(tagNumber);
       const now = Date.now();
       const alertsToSend = [];
 
@@ -75,18 +100,14 @@ module.exports = (io) => {
         }
       });
 
-      if (alertsToSend.length > 0 && fcmTokens.length > 0) {        
-        const messages = fcmTokens.map((token) => ({
-          notification: {
-            title: `⚠️ Alert for Cow ${tagNumber}`,
-            body: alertsToSend.join(", "),
-          },
-          token,
-        }));
-
-        admin.messaging().sendEach(messages)
-          .then(response => console.log("✅ Notification sent:", response))
-          .catch(err => console.error("❌ FCM error:", err));
+      if (alertsToSend.length > 0) {
+        sendCowNotification(tagNumber, alertsToSend.join(", "))
+          .then(() => {
+            console.log("✅ Notification sent successfully");
+          })
+          .catch((error) => {
+            console.error("❌ Error sending notification:", error);
+          });
       }
 
     } catch (error) {
