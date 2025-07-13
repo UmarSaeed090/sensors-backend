@@ -3,8 +3,8 @@ const router = express.Router();
 const sensorData = require("../models/sensorData");
 
 const THRESHOLDS = {
-  temperature: { min: 30, max: 39 },
-  heartRate: { min: 60, max: 100 },
+  temperature: { min: 38, max: 40 },
+  heartRate: { min: 40, max: 80 },
   spo2: { min: 95, max: 100 },
 };
 
