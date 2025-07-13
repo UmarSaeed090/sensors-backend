@@ -6,6 +6,18 @@ const sensorDataSchema = new mongoose.Schema({
   max30100: { heartRate: Number, spo2: Number },
   ds18b20: { temperature: Number },
   gps: { latitude: Number, longitude: Number },
+  mpu6050: {
+    accel: {
+      x: Number,
+      y: Number,
+      z: Number
+    },
+    gyro: {
+      x: Number,
+      y: Number,
+      z: Number
+    }
+  },
   timestamp: {
     type: Date,
     default: () => new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" })),
